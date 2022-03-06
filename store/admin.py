@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.utils.html import format_html, urlencode
 from django.urls import reverse
 from django.db.models import Count
+
 from . import models
 
 class InventoryFilter(admin.SimpleListFilter):
@@ -17,9 +18,14 @@ class InventoryFilter(admin.SimpleListFilter):
         if self.value() == '<10':
             return queryset.filter(inventory__lt = 10)
 
+
+
+
+
 @admin.register(models.Product)
 class ProductAdmin(admin.ModelAdmin):
     autocomplete_fields = ['collection']
+    search_fields = ['title']
     prepopulated_fields = {
         'slug': ['title']
     }
@@ -73,10 +79,19 @@ class CustomerAdmin(admin.ModelAdmin):
         )
 
 
+class OrderItemInline(admin.TabularInline):
+    autocomplete_fields = ['product']
+    min_num = 1
+    max_num = 10
+    model = models.OrderItem
+    extra = 0
+
+
 @admin.register(models.Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['id','placed_at','customer']
     autocomplete_fields = ['customer']
+    list_display = ['id','placed_at','customer']
+    inlines = [OrderItemInline]
 
 
 @admin.register(models.Collection)
